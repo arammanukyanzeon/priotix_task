@@ -1,0 +1,50 @@
+version: '3'
+
+services:
+  db:
+    image: "postgres:11"
+    container_name: "postgres"
+    environment:
+      POSTGRES_PASSWORD: qwerty1
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432"
+
+  api:
+    environment:
+      - PORT=8080
+      - TWITTER_SERVICE_ADDRESS=twitter-scraper:3002
+      - SUBJECT_SERVICE_ADDRESS=subject-generator:3001
+    image: arammanukyan/api
+    ports:
+      - "3000:8080"
+    depends_on:
+      - twitter-scraper
+      - subject-generator
+
+  subject-generator:
+    environment:
+     - TWITTER_SERVICE_ADDRESS=twitter-scraper:3002
+     - DB_HOST=db
+     - DB_PASSWORD=qwerty1
+     - DB_DATABASE=px_subject
+     - PORT=3001
+    image: arammanukyan/subject-generator
+    expose:
+      - "3001"
+    depends_on:
+      - db
+      - twitter-scraper
+
+  twitter-scraper:
+    environment:
+     - DB_HOST=db
+     - DB_PASSWORD=qwerty1
+     - DB_DATABASE=px_twitter
+     - PORT=3002
+    image: arammanukyan/twitter-scraper
+    expose:
+      - "3002"
+    depends_on:
+      - db

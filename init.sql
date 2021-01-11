@@ -1,0 +1,2 @@
+CREATE DATABASE px_twitter;
+CREATE DATABASE px_subject;
